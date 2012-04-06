@@ -104,23 +104,47 @@ static BOOL handle_command(const uint8_t *start, const uint8_t *end, BOOL firstT
         {
             // Set port pin command
             uint8_t mask;
-            if (start[2] != '.' || start[4] != '=')
+            if (start[2] != '.')
                 goto syntax_error;
-            mask = 1 << start[3] - '0';
-            if (start[1] == '1') {
-                P1DIR |= mask;
-                if (start[5] == '0')
-                    P1OUT &= ~mask;
-                else
-                    P1OUT |= mask;
+            mask = 1 << (start[3] - '0');
+            if (start[4] == '=') {
+                if (start[1] == '1') {
+                    P1DIR |= mask;
+                    if (start[5] == '0')
+                        P1OUT &= ~mask;
+                    else
+                        P1OUT |= mask;
+                }
+                else if (start[1] == '2') {
+                    P2DIR |= mask;
+                    if (start[5] == '0')
+                        P2OUT &= ~mask;
+                    else
+                        P2OUT |= mask;
+                }
             }
-            else if (start[1] == '2') {
-                P2DIR |= mask;
-                if (start[5] == '0')
-                    P2OUT &= ~mask;
-                else
-                    P2OUT |= mask;
+            else if (start[4] == '?') {
+                if (start[1] == '1') {
+                    P1DIR &= ~mask;
+                    console_puts("READ: ");
+                    if (P1IN & mask)
+                        console_putc('1');
+                    else
+                        console_putc('0');
+                    console_newline();
+                }
+                else if (start[1] == '2') {
+                    P2DIR &= ~mask;
+                    console_puts("READ: ");
+                    if (P2IN & mask)
+                        console_putc('1');
+                    else
+                        console_putc('0');
+                    console_newline();
+                }
             }
+            else
+                goto syntax_error;
             return FALSE;
         }
         else
