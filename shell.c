@@ -100,6 +100,11 @@ static BOOL handle_command(const uint8_t *start, const uint8_t *end, BOOL firstT
                 bus_spi_read();
             return FALSE;
         }
+        else if (start[0] == 's' && start[1] == 'p' && start[2] == 'i')
+        {
+            spi_init();
+            return TRUE;
+        }
         else if (start[0] == 'p')
         {
             // Set port pin command
