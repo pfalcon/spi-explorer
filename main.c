@@ -31,7 +31,6 @@ int main(void)
     uart_init();
     console_init();
     shell_init();
-    spi_init();
       
     eint();
 
