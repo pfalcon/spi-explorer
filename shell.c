@@ -100,12 +100,36 @@ static BOOL handle_command(const uint8_t *start, const uint8_t *end, BOOL firstT
                 bus_spi_read();
             return FALSE;
         }
+        else if (start[0] == 'p')
+        {
+            // Set port pin command
+            uint8_t mask;
+            if (start[2] != '.' || start[4] != '=')
+                goto syntax_error;
+            mask = 1 << start[3] - '0';
+            if (start[1] == '1') {
+                P1DIR |= mask;
+                if (start[5] == '0')
+                    P1OUT &= ~mask;
+                else
+                    P1OUT |= mask;
+            }
+            else if (start[1] == '2') {
+                P2DIR |= mask;
+                if (start[5] == '0')
+                    P2OUT &= ~mask;
+                else
+                    P2OUT |= mask;
+            }
+            return FALSE;
+        }
         else
         {   // handle other commands
             // ignore
         }
     }
 
+syntax_error:
     console_puts("BadCmd");
     console_newline();
 
