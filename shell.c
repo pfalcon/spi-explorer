@@ -22,9 +22,18 @@
 
 // Use duplex mode for bus transfers
 static char duplex = 1; // Need to have this initilized, because if this goes to BSS, something trashes it
+static int bus_mode = BUS_HIZ;
+static char *bus_prompts[] = {"HiZ", "SPI"};
+
+static void set_bus(int bus)
+{
+    bus_mode = bus;
+    console_prompt = bus_prompts[bus];
+}
 
 void shell_init(void)
 {
+    set_bus(BUS_HIZ);
 }
 
 static void bus_spi_start(void)
@@ -214,6 +223,7 @@ void shell_eval(const uint8_t *s, uint16_t len)
             console_echo = FALSE;
         return;
     } else if (match(s, "spi")) {
+        set_bus(BUS_SPI);
         spi_init();
         return;
     } else {
