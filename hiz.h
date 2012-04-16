@@ -13,18 +13,7 @@
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
-#ifndef SPI_H
-#define SPI_H 1
 
-#include "common.h"
 #include "bus.h"
 
-#define SCLK    BIT5
-#define SDI     BIT7
-#define SDO     BIT6
-#define CS      BIT4
-
-extern struct Bus spi_bus;
-
-#endif
-
+extern struct Bus hiz_bus;

@@ -5,17 +5,6 @@ http://www.msp430launchpad.com/2010/08/half-duplex-software-uart-on-launchpad.ht
 
 /****************************************************************/
 
-#define TXD BIT1 // TXD on P1.1
-#define RXD BIT2 // RXD on P1.2
-
-#define FCPU 1000000
-#define BAUDRATE 9600
-
-#define BIT_TIME        (FCPU / BAUDRATE)
-#define HALF_BIT_TIME   (BIT_TIME / 2)
-
-/****************************************************************/
-
 static volatile uint8_t bitCount; // Bit count, used when transmitting byte
 static volatile unsigned int TXByte; // Value sent over UART when uart_putc() is called
 static volatile unsigned int RXByte; // Value recieved once hasRecieved is set

@@ -17,18 +17,20 @@
 #include "console.h"
 #include "parse.h"
 #include "shell.h"
+#include "hiz.h"
 #include "spi.h"
 #include <ctype.h>
 
 // Use duplex mode for bus transfers
 static char duplex = 1; // Need to have this initilized, because if this goes to BSS, something trashes it
-static int bus_mode = BUS_HIZ;
-static char *bus_prompts[] = {"HiZ", "SPI"};
+static struct Bus *buses[] = {&hiz_bus, &spi_bus};
+static struct Bus *current_bus;
 
 static void set_bus(int bus)
 {
-    bus_mode = bus;
-    console_prompt = bus_prompts[bus];
+    current_bus = buses[bus];
+    console_prompt = current_bus->prompt;
+    current_bus->init();
 }
 
 void shell_init(void)
@@ -38,7 +40,7 @@ void shell_init(void)
 
 static void bus_spi_start(void)
 {
-    spi_cs_assert();
+    current_bus->start();
 
     console_puts("CS ENABLED");
     console_newline();
@@ -46,7 +48,7 @@ static void bus_spi_start(void)
 
 static void bus_spi_stop(void)
 {
-    spi_cs_deassert();
+    current_bus->stop();
 
     console_puts("CS DISABLED");
     console_newline();
@@ -61,7 +63,8 @@ static void bus_dump_read(uint8_t c)
 
 static void bus_spi_write(uint8_t c)
 {
-    uint8_t r = spi_write8(c);
+    uint8_t r = current_bus->xact(c);
+
     console_puts("WRITE: 0x");
     console_puthex8(c);
     console_newline();
@@ -72,7 +75,7 @@ static void bus_spi_write(uint8_t c)
 static void bus_spi_read(void)
 {
     uint8_t c;
-    c = spi_write8(0xFF);
+    c = current_bus->xact(0xFF);
     bus_dump_read(c);
 }
 
@@ -224,7 +227,6 @@ void shell_eval(const uint8_t *s, uint16_t len)
         return;
     } else if (match(s, "spi")) {
         set_bus(BUS_SPI);
-        spi_init();
         return;
     } else {
         // No directive - process bus commands
