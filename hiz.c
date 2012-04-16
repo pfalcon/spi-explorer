@@ -20,7 +20,8 @@
 
 void hiz_init(void)
 {
-    P1DIR = P1DIR & (TXD | RXD);
+    // Don't touch UART pins, the rest is input
+    P1DIR &= TXD | RXD;
 }
 
 struct Bus hiz_bus = {
