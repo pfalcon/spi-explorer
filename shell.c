@@ -110,6 +110,13 @@ static BOOL handle_command(const uint8_t *start, const uint8_t *end, BOOL firstT
                 bus_spi_read();
             return FALSE;
         }
+        else if (start[0] == 'e' && start[1] == 'c')
+        {
+            console_echo = TRUE;
+            if (start[6] == 'f')
+                console_echo = FALSE;
+            return TRUE;
+        }
         else if (start[0] == 's' && start[1] == 'p' && start[2] == 'i')
         {
             spi_init();
