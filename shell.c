@@ -228,6 +228,9 @@ void shell_eval(const uint8_t *s, uint16_t len)
     } else if (match(s, "spi")) {
         set_bus(BUS_SPI);
         return;
+    } else if (match(s, "hiz")) {
+        set_bus(BUS_HIZ);
+        return;
     } else {
         // No directive - process bus commands
         eval_bus_commands(s);
