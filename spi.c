@@ -34,6 +34,11 @@ void spi_init(void)
     USICTL0 &= ~USISWRST;
 }
 
+void spi_exit(void)
+{
+    USICTL0 = USISWRST;
+    P1DIR &= ~(SCLK | SDO | CS | SDI);
+}
 
 void spi_cs_assert(void)
 {
@@ -53,10 +58,10 @@ uint8_t spi_write8(uint8_t c)
     // clear interrupt flag
     USICTL1 &= ~USIIFG;
     // set number of bits to send, begins tx
-    USICNT=8;
+    USICNT = 8;
 
     // wait for tx
-    while((USICTL1 & USIIFG) != 0x01);
+    while(!(USICTL1 & USIIFG));
 
     c = USISRL;
 
@@ -66,7 +71,7 @@ uint8_t spi_write8(uint8_t c)
 struct Bus spi_bus = {
     .prompt = "SPI",
     .init = spi_init,
-    .exit = NULL,
+    .exit = spi_exit,
     .start = spi_cs_assert,
     .stop = spi_cs_deassert,
     .xact = spi_write8,
