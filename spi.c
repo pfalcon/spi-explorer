@@ -24,8 +24,8 @@ void spi_init(void)
     // enable SDI, SDO, SCLK, master mode, MSB, output enabled, hold in reset
     USICTL0 = USIPE7 | USIPE6 | USIPE5 | USIMST | USIOE | USISWRST;
 
-    // SMCLK / 128
-    USICKCTL = USIDIV_7 + USISSEL_2;
+    // SMCLK / 128 = ~7.8KHz
+    USICKCTL = USISSEL_2 | USIDIV_7;
 
     // clock phase
     USICTL1 |= USICKPH;
