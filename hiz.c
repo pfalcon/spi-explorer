@@ -13,18 +13,18 @@
 * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
-#ifndef SPI_H
-#define SPI_H 1
 
 #include "common.h"
-#include "bus.h"
+#include "hiz.h"
+#include "uart.h"
 
-#define SCLK    BIT5
-#define SDI     BIT7
-#define SDO     BIT6
-#define CS      BIT4
+void hiz_init(void)
+{
+    // Don't touch UART pins, the rest is input
+    P1DIR &= TXD | RXD;
+}
 
-extern struct Bus spi_bus;
-
-#endif
-
+struct Bus hiz_bus = {
+    .prompt = "HiZ",
+    .init = hiz_init,
+};

@@ -10,7 +10,7 @@ LDFLAGS = -Wl,-Map=$(TARGET).map,--cref
 LDFLAGS += -Wl,--relax
 LDFLAGS += -Wl,--gc-sections
 
-OBJS=main.o uart.o cpu.o console.o parse.o shell.o spi.o
+OBJS=main.o uart.o cpu.o console.o parse.o shell.o hiz.o spi.o
 
 all: $(TARGET).elf
 

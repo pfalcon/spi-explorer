@@ -15,11 +15,6 @@
 */
 #include "spi.h"
 
-#define SCLK    BIT5
-#define SDI     BIT7
-#define SDO     BIT6
-#define CS      BIT4
-
 
 void spi_init(void)
 {
@@ -68,3 +63,11 @@ uint8_t spi_write8(uint8_t c)
     return c;
 }
 
+struct Bus spi_bus = {
+    .prompt = "SPI",
+    .init = spi_init,
+    .exit = NULL,
+    .start = spi_cs_assert,
+    .stop = spi_cs_deassert,
+    .xact = spi_write8,
+};
