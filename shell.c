@@ -94,48 +94,43 @@ const uint8_t *eval_pin_command(const uint8_t *s)
 {
     // Set port pin command
     uint8_t mask;
+    volatile uint8_t *port;
 
     if (s[2] != '.')
         goto syntax_error;
 
     mask = 1 << (s[3] - '0');
+    switch (s[1]) {
+    case '1':
+        port = &P1IN;
+        break;
+    case '2':
+        port = &P2IN;
+        break;
+    default:
+        goto syntax_error;
+    }
 
     if (s[4] == '=') {
-                if (s[1] == '1') {
-                    P1DIR |= mask;
-                    if (s[5] == '0')
-                        P1OUT &= ~mask;
-                    else
-                        P1OUT |= mask;
-                }
-                else if (s[1] == '2') {
-                    P2DIR |= mask;
-                    if (s[5] == '0')
-                        P2OUT &= ~mask;
-                    else
-                        P2OUT |= mask;
-                }
-                s += 6;
+        // PxDIR
+        port[2] |= mask;
+        // PxOUT
+        if (s[5] == '0')
+            port[1] &= ~mask;
+        else
+            port[1] |= mask;
+        s += 6;
     } else if (s[4] == '?') {
-                if (s[1] == '1') {
-                    P1DIR &= ~mask;
-                    console_puts("READ: ");
-                    if (P1IN & mask)
-                        console_putc('1');
-                    else
-                        console_putc('0');
-                    console_newline();
-                }
-                else if (s[1] == '2') {
-                    P2DIR &= ~mask;
-                    console_puts("READ: ");
-                    if (P2IN & mask)
-                        console_putc('1');
-                    else
-                        console_putc('0');
-                    console_newline();
-                }
-                s += 5;
+        // PxDIR
+        port[2] &= ~mask;
+        console_puts("READ: ");
+        // PxIN
+        if (port[0] & mask)
+            console_putc('1');
+        else
+            console_putc('0');
+        console_newline();
+        s += 5;
     }
     return s;
 
