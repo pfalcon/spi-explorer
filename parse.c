@@ -32,12 +32,15 @@ BOOL memstrcmp(const uint8_t *start, const uint8_t *end, const char *str)
 // hex nibble to int
 static int8_t digit_to_int(int8_t ch)
 {
+    if (ch >= 'a')
+        ch -= 'a' - 'A';
     ch -= '0';
     if (ch < 0)
         return 127; // overflow
     if (ch < 10)
         return ch;
-    ch &= ~0x20;
+    if (ch < 0x11)
+        return 127;
     return ch - 7;
 }
 
@@ -91,6 +94,38 @@ BOOL parse_number(const uint8_t *str, uint8_t len, uint16_t *result)
     }
     return TRUE;
 }
+
+const uint8_t *parse_number_str(const uint8_t *s, uint16_t *result)
+{
+    uint8_t base = 10;
+    uint8_t i;
+    uint8_t c;
+    uint8_t digit;
+
+    *result = 0;
+
+    if (*s == '0') {
+        if (s[1] == 'b') {
+            base = 2;
+        } else if (s[1] == 'x') {
+            base = 16;
+        } else {
+            goto out;
+        }
+        s += 2;
+    }
+out:
+
+    while (1) {
+        digit = digit_to_int(*s);
+
+        if (digit > base)
+            return s;
+        *result = (*result) * base + digit;
+        s++;
+    }
+}
+
 
 /*******************************************************************************/
 

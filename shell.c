@@ -18,6 +18,7 @@
 #include "parse.h"
 #include "shell.h"
 #include "spi.h"
+#include <ctype.h>
 
 enum
 {
@@ -182,8 +183,162 @@ syntax_error:
     return FALSE;
 }
 
+BOOL match(const uint8_t *s, char *pat)
+{
+    while (*pat) {
+        if (*s++ != *pat++)
+            return FALSE;
+    }
+    return TRUE;
+}
 
-void shell_eval(const uint8_t *str, uint16_t len)
+const uint8_t *eval_pin_command(const uint8_t *s)
+{
+    // Set port pin command
+    uint8_t mask;
+
+    if (s[2] != '.')
+        goto syntax_error;
+
+    mask = 1 << (s[3] - '0');
+
+    if (s[4] == '=') {
+                if (s[1] == '1') {
+                    P1DIR |= mask;
+                    if (s[5] == '0')
+                        P1OUT &= ~mask;
+                    else
+                        P1OUT |= mask;
+                }
+                else if (s[1] == '2') {
+                    P2DIR |= mask;
+                    if (s[5] == '0')
+                        P2OUT &= ~mask;
+                    else
+                        P2OUT |= mask;
+                }
+                s += 6;
+    } else if (s[4] == '?') {
+                if (s[1] == '1') {
+                    P1DIR &= ~mask;
+                    console_puts("READ: ");
+                    if (P1IN & mask)
+                        console_putc('1');
+                    else
+                        console_putc('0');
+                    console_newline();
+                }
+                else if (s[1] == '2') {
+                    P2DIR &= ~mask;
+                    console_puts("READ: ");
+                    if (P2IN & mask)
+                        console_putc('1');
+                    else
+                        console_putc('0');
+                    console_newline();
+                }
+                s += 5;
+    }
+    return s;
+
+syntax_error:
+    console_puts("BadCmd");
+    console_newline();
+    return NULL;
+}
+
+const uint8_t *eval_single_bus_command(const uint8_t *s);
+void eval_bus_commands(const uint8_t *s)
+{
+    while (*s) {
+        if (*s == ' ' || *s == '\t' || *s == ',') {
+            s++;
+            continue;
+        }
+        if (!(s = eval_single_bus_command(s))) {
+            break;
+        }
+    }
+}
+
+
+const uint8_t *eval_single_bus_command(const uint8_t *s)
+{
+    uint16_t num;
+    uint16_t repeat = 1;
+    uint8_t cmd;
+
+    // Process non-repeatable commands
+    switch (*s) {
+    case '{':
+        duplex = 1;
+    case '[':
+        bus_spi_start();
+        return s + 1;
+    case '}':
+    case ']':
+        bus_spi_stop();
+        duplex = 0;
+        return s + 1;
+    case 'p':
+        return eval_pin_command(s);
+    }
+
+    // Process repeatable commands
+    if (isdigit(*s)) {
+        s = parse_number_str(s, &num);
+        cmd = '0';
+    } else if (*s == 'r') {
+        cmd = *s++;
+    } else if (*s == '&') {
+        cmd = *s++;
+    } else {
+        goto syntax_error;
+    }
+
+    if (*s == ':') {
+        s = parse_number_str(s + 1, &repeat);
+    }
+
+    while(repeat--) {
+        switch (cmd) {
+        case '0':
+            bus_spi_write((uint8_t)num);
+            break;
+        case 'r':
+            bus_spi_read();
+            break;
+        case '&':
+            //delay_1us();
+            break;
+        }
+    }
+    return s;
+
+syntax_error:
+    console_puts("BadCmd");
+    console_newline();
+    return NULL;
+}
+
+void shell_eval(const uint8_t *s, uint16_t len)
+{
+    // Process directives (start at the beginning of line, take whole line)
+    if (match(s, "echo o")) {
+        console_echo = TRUE;
+        if (s[6] == 'f')
+            console_echo = FALSE;
+        return;
+    } else if (match(s, "spi")) {
+        spi_init();
+        return;
+    } else {
+        // No directive - process bus commands
+        eval_bus_commands(s);
+    }
+}
+
+void _shell_eval(const uint8_t *str, uint16_t len)
 {
     uint8_t state = STATE_SEARCHING;
     uint8_t c;

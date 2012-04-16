@@ -55,6 +55,7 @@ static void console_rx(uint8_t c)
     switch(c)
     {
         case 0x0D: // \r
+            cmdbuf[cmdbuf_len] = 0;
             got_line = TRUE;
             if (console_echo)
                 console_newline();
