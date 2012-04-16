@@ -31,6 +31,7 @@
 static uint8_t cmdbuf_len; // number of bytes in command buf
 static uint8_t cmdbuf[CMDBUF_SIZ];
 static BOOL got_line = FALSE;
+BOOL console_echo = 1;
 
 /**************************************************************/
 
@@ -55,24 +56,28 @@ static void console_rx(uint8_t c)
     {
         case 0x0D: // \r
             got_line = TRUE;
-            console_newline();
+            if (console_echo)
+                console_newline();
             break;
         case '\b':  // backspace
         case 0x7F:  // del
             if (cmdbuf_len > 0)
             {
                 cmdbuf_len--;
-                console_puts("\b \b");
+                if (console_echo)
+                    console_puts("\b \b");
             }
             break;
         default:
             if (cmdbuf_len < sizeof(cmdbuf)-1)
             {
-                console_putc(c);
+                if (console_echo)
+                    console_putc(c);
                 cmdbuf[cmdbuf_len++] = c;
             }
             else
-                console_putc('\a');  // bell
+                if (console_echo)
+                    console_putc('\a');  // bell
             break;
     }
 }

@@ -33,6 +33,7 @@ void console_putdec(int32_t i);
 void console_putbin(uint8_t b);
 void console_putsmem(const uint8_t *a, const uint8_t *b);
 
+extern BOOL console_echo;
 
 #endif
 
