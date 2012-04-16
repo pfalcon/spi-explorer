@@ -32,12 +32,14 @@ static uint8_t cmdbuf_len; // number of bytes in command buf
 static uint8_t cmdbuf[CMDBUF_SIZ];
 static BOOL got_line = FALSE;
 BOOL console_echo = 1;
+char *console_prompt = "";
 
 /**************************************************************/
 
 static void prompt(void)
 {
-    console_puts("SPI> ");
+    console_puts(console_prompt);
+    console_puts("> ");
 }
 
 void console_init(void)

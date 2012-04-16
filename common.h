@@ -35,5 +35,7 @@ typedef bool BOOL;
 
 void driver_tick(void);
 
+enum {BUS_HIZ, BUS_SPI};
+
 #endif
 
