@@ -21,6 +21,7 @@
 /******************************************************************/
 
 BOOL parse_number(const uint8_t *str, uint8_t len, uint16_t *result);
+const uint8_t *parse_number_str(const uint8_t *str, uint16_t *result);
 
 /******************************************************************/
 
