@@ -25,6 +25,9 @@ enum
     STATE_IN_TOKEN,
 };
 
+// Use duplex mode for bus transfers
+static char duplex = 1; // Need to have this initilized, because if this goes to BSS, something trashes it
+
 void shell_init(void)
 {
 }
@@ -45,21 +48,28 @@ static void bus_spi_stop(void)
     console_newline();
 }
 
+static void bus_dump_read(uint8_t c)
+{
+    console_puts("READ: 0x");
+    console_puthex8(c);
+    console_newline();
+}
+
 static void bus_spi_write(uint8_t c)
 {
-    spi_write8(c);
+    uint8_t r = spi_write8(c);
     console_puts("WRITE: 0x");
     console_puthex8(c);
     console_newline();
+    if (duplex)
+        bus_dump_read(r);
 }
 
 static void bus_spi_read(void)
 {
     uint8_t c;
     c = spi_write8(0xFF);
-    console_puts("READ: 0x");
-    console_puthex8(c);
-    console_newline();
+    bus_dump_read(c);
 }
 
 
@@ -191,8 +201,9 @@ void shell_eval(const uint8_t *str, uint16_t len)
                     case ',':
                         break;
 
-                    case '[':
                     case '{':
+                        duplex = 1;
+                    case '[':
                         firstToken = FALSE;
                         bus_spi_start();
                         break;
@@ -201,6 +212,7 @@ void shell_eval(const uint8_t *str, uint16_t len)
                     case '}':
                         firstToken = FALSE;
                         bus_spi_stop();
+                        duplex = 0;
                         break;
 
                     default:    // start of token
@@ -214,11 +226,12 @@ void shell_eval(const uint8_t *str, uint16_t len)
             case STATE_IN_TOKEN:
                 switch(c)
                 {
+                    case '{':
+                        duplex = 1;
                     case ' ':   // end of token
                     case '\t':
                     case ',':
                     case '[':
-                    case '{':
                     case ']':
                     case '}':
                     case '#':
