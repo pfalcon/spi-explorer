@@ -18,13 +18,19 @@
 #include "hiz.h"
 #include "uart.h"
 
-void hiz_init(void)
+static void hiz_init(void)
 {
     // Don't touch UART pins, the rest is input
     P1DIR &= TXD | RXD;
 }
 
+static void placeholder1() {}
+static uint8_t placeholder2(uint8_t c) { return 0; }
+
 struct Bus hiz_bus = {
     .prompt = "HiZ",
     .init = hiz_init,
+    .start = placeholder1,
+    .stop = placeholder1,
+    .xact = placeholder2,
 };
