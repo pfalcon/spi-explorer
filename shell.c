@@ -28,6 +28,8 @@ static struct Bus *current_bus;
 
 static void set_bus(int bus)
 {
+    if (current_bus && current_bus->exit)
+        current_bus->exit();
     current_bus = buses[bus];
     console_prompt = current_bus->prompt;
     current_bus->init();
