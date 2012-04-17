@@ -228,6 +228,11 @@ void shell_eval(const uint8_t *s, uint16_t len)
     } else if (match(s, "hiz")) {
         set_bus(BUS_HIZ);
         return;
+    } else if (match(s, "peek")) {
+        uint16_t addr;
+        parse_number_str(s + 5, &addr);
+        bus_dump_read(*(uint8_t*)addr);
+        return;
     } else {
         // No directive - process bus commands
         eval_bus_commands(s);
