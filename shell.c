@@ -22,7 +22,7 @@
 #include <ctype.h>
 
 // Use duplex mode for bus transfers
-static char duplex = 1; // Need to have this initilized, because if this goes to BSS, something trashes it
+static char duplex;
 static struct Bus *buses[] = {&hiz_bus, &spi_bus};
 static struct Bus *current_bus;
 
