@@ -40,6 +40,13 @@ void shell_init(void)
     set_bus(BUS_HIZ);
 }
 
+static const uint8_t *syntax_error()
+{
+    console_puts("BadCmd");
+    console_newline();
+    return NULL;
+}
+
 static void bus_spi_start(void)
 {
     current_bus->start();
@@ -97,7 +104,7 @@ const uint8_t *eval_pin_command(const uint8_t *s)
     volatile uint8_t *port;
 
     if (s[2] != '.')
-        goto syntax_error;
+        return syntax_error();
 
     mask = 1 << (s[3] - '0');
     switch (s[1]) {
@@ -108,7 +115,7 @@ const uint8_t *eval_pin_command(const uint8_t *s)
         port = &P2IN;
         break;
     default:
-        goto syntax_error;
+        return syntax_error();
     }
 
     if (s[4] == '=') {
@@ -133,11 +140,6 @@ const uint8_t *eval_pin_command(const uint8_t *s)
         s += 5;
     }
     return s;
-
-syntax_error:
-    console_puts("BadCmd");
-    console_newline();
-    return NULL;
 }
 
 const uint8_t *eval_single_bus_command(const uint8_t *s);
@@ -186,7 +188,7 @@ const uint8_t *eval_single_bus_command(const uint8_t *s)
     } else if (*s == '&') {
         cmd = *s++;
     } else {
-        goto syntax_error;
+        return syntax_error();
     }
 
     if (*s == ':') {
@@ -207,11 +209,6 @@ const uint8_t *eval_single_bus_command(const uint8_t *s)
         }
     }
     return s;
-
-syntax_error:
-    console_puts("BadCmd");
-    console_newline();
-    return NULL;
 }
 
 void shell_eval(const uint8_t *s, uint16_t len)
