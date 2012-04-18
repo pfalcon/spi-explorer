@@ -1,5 +1,14 @@
 Serial SPI Explorer
 ===================
+Originally by:
+Joby Taffey <jrt@hodgepig.org>
+http://blog.hodgepig.org
+
+Changes and extensions by:
+Paul Sokolovsky <pfalcon@users.sourceforge.net>
+
+See bottom of document for changes since the original version.
+
 
 A serial port SPI interface for the TI Launchpad. Following the Bus Pirate command syntax.
 
@@ -57,7 +66,32 @@ MOSI P1.6
 MISO P1.7
 SCLK P1.5
 
---
-Joby Taffey <jrt@hodgepig.org>
-http://blog.hodgepig.org
 
+Changes since the original version
+==================================
+1. Code optimized for size (some functions rewritten, got rid of uint32_t).
+2. Command parsing code rewritten to optimize for size and fix memory overrun
+   issues.
+3. "{" command (duplex SPI transfer) implemented.
+4. "echo off"/"echo on" commands implemented. Echo off is useful for
+   programmatical accel, to workaround inherent duplex problems with MSP430
+   soft-UART (i.e. soft UART cannot reliably work in duplex mode).
+5. Implemented "HiZ" bus state, and set as default on start, like the original
+   Bus Pirate. In this mode, all port pins not used for host communication are
+   set to input, which makes them be hi-Z if seen as outputs (of course, some
+   port pins have external pull-ups in Launchpad). In this mode, user has full
+   control of all pins (see below). This mode can be (re)entered with "hiz"
+   command.
+6. SPI mode should be explicitly selected with "spi" command.
+7. Implemented commands to access port pins:
+   * read:  pN.M?     e.g.: p1.2?
+   * write: pN.M=0|1  e.g.: p1.0=1
+8. Bus mode support was made more "plugin" and object oriented (WIP), with the
+   hope to ease adding more bus modes (new bus modes unlikely will fit into
+   lowy 2Kb of msp430g2231 of the original Launchpad 1.4, but the idea is to
+   make them compile-time selectable, and Launchpad 1.5's MCU should have
+   enough room for lot of things).
+
+TODO: Implement explicit "pinmode pN.M in|out" command to set pin direction.
+Currently, direction is set automatically based on pN.M? or pN.M= command,
+but that in worst case lead to port burn out in case of mistake.
